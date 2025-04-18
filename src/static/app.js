@@ -37,11 +37,13 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>`
             : `<p><em>No participants yet</em></p>`;
 
+        // Updated the activity card generation to include a 'Register' button
         activityCard.innerHTML = `
           <h4>${name}</h4>
           <p>${details.description}</p>
           <p><strong>Schedule:</strong> ${details.schedule}</p>
           <p><strong>Availability:</strong> ${spotsLeft} spots left</p>
+          <button class="register-btn" data-activity="${name}">Register</button>
           <div class="participants-container">
             ${participantsHTML}
           </div>
@@ -54,6 +56,35 @@ document.addEventListener("DOMContentLoaded", () => {
         option.value = name;
         option.textContent = name;
         activitySelect.appendChild(option);
+
+        // Add event listener for the 'Register' button
+        activityCard.querySelector(".register-btn").addEventListener("click", async (event) => {
+          const activity = event.target.getAttribute("data-activity");
+          const email = prompt("Enter your email to register:");
+
+          if (email) {
+            try {
+              const response = await fetch(
+                `/activities/${encodeURIComponent(activity)}/signup?email=${encodeURIComponent(email)}`,
+                {
+                  method: "POST",
+                }
+              );
+
+              const result = await response.json();
+
+              if (response.ok) {
+                alert(result.message);
+                fetchActivities(); // Refresh activities list
+              } else {
+                alert(result.detail || "An error occurred");
+              }
+            } catch (error) {
+              alert("Failed to sign up. Please try again.");
+              console.error("Error signing up:", error);
+            }
+          }
+        });
       });
 
       // Add event listeners to delete buttons
